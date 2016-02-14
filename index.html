@@ -34,6 +34,8 @@
 				vec4 currPx = texture2D(tCurrentFrame, vUv);
 
 				gl_FragColor = currPx - prevPx;
+				if(gl_FragColor.rgb == vec3(0,0,0)) {
+				}
 			}
 		</script>
 	</head>
@@ -47,13 +49,9 @@
 			var video = document.querySelector('video');
 			var stopped = true;
 			video.addEventListener('playing', function onPlaying(){
-				console.log('playing')
 				renderer.setSize(video.videoWidth, video.videoHeight);
 				prevFrameCanvas.width = currentFrameCanvas.width = video.videoWidth;
 				prevFrameCanvas.height = currentFrameCanvas.height = video.videoHeight;
-
-				// camera.aspect = video.videoWidth / video.videoHeight;
-				// camera.updateProjectionMatrix();
 				if(stopped){
 					stopped = false;
 					update();	
@@ -62,12 +60,10 @@
 
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setPixelRatio( window.devicePixelRatio );
-			// renderer.setSize( window.innerWidth, window.innerHeight );
 			document.querySelector('#container').appendChild(renderer.domElement);
 
 			var scene = new THREE.Scene();
 			var width = 1, height = 1;
-			// var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 50 );
 			var camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
 			camera.position.z = 1;
 
@@ -96,7 +92,6 @@
 			});
 
 			var geometry = new THREE.PlaneGeometry( 1, 1, 1 );
-			// var geometry = new THREE.PlaneGeometry( .81, .81, .81 );
 			var plane = new THREE.Mesh( geometry, shaderMaterial );
 			scene.add(plane);
 			
