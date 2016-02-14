@@ -1,0 +1,68 @@
+<html>
+	<head>
+
+	</head>
+	<body>
+		<canvas id="canvas"></canvas>
+		<canvas id="tmp-canvas" hidden></canvas>
+		<video id="video" src="mov_bbb.mp4" autoplay muted loop></video>
+		
+		<script>
+			
+			var canvas = document.getElementById('canvas');
+			var ctx = canvas.getContext('2d');
+			var tmpCanvas = document.getElementById('tmp-canvas');
+			var tmpCtx = tmpCanvas.getContext('2d');
+
+			var video = document.getElementById('video');
+
+			video.addEventListener('playing', function(){
+				tmpCanvas.width = canvas.width = video.videoWidth;
+				tmpCanvas.height = canvas.height = video.videoHeight;
+
+				lastFrame = tmpCtx.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+				update();
+			});
+
+			var currentFrame, lastFrame, lastTime;
+
+			function update(){
+				requestAnimationFrame(update);
+				var time = video.currentTime;
+				if (time === lastTime) { return; }
+				lastTime = time;
+				tmpCtx.drawImage(video, 0, 0);
+				currentFrame = tmpCtx.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+
+				var d = currentFrame.data,
+					ld = lastFrame.data;
+
+				for (var i = 0; i < d.length; i += 4) {
+
+					var currPx = ''+d[i]+d[i+1]+d[i+2];
+					var lastPx = ''+ld[i]+ld[i+1]+ld[i+2];
+
+					if(currPx === lastPx){
+						currentFrame.data[i] = currPx[i];
+						currentFrame.data[i+1] = currPx[i+1];
+						currentFrame.data[i+2] = currPx[i+2];
+					}else {
+						// currentFrame.data[i] = 0;
+						// currentFrame.data[i+1] = 0;
+						// currentFrame.data[i+2] = 0;
+					}
+				}
+
+				lastFrame = tmpCtx.getImageData(0, 0, tmpCanvas.width, tmpCanvas.height);
+
+				ctx.putImageData(currentFrame, 0, 0);
+			}
+
+			// function equalPixels(px1, px2){
+				//only check color, no alpha
+				// return px1[0]===px2[0] && px1[1]===px2[1] && px1[2]===px2[2];
+			// }
+
+		</script>
+	</body>
+</html>

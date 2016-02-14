@@ -1,0 +1,117 @@
+<html>
+	<head>
+		<style>
+			html, body {
+				margin: 0; padding: 40px;
+				background: #222;
+			}
+		</style>
+		<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+		<script src="three.min.js"></script>
+		<!-- Shaders -->
+		<script type="x-shader/x-vertex" id="vertexshader">
+			varying vec2 vUv;
+			void main(){
+				vUv = uv;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+			}
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshader">
+			varying vec2 vUv;
+			uniform sampler2D tCurrentFrame;
+			uniform sampler2D tPrevFrame;
+			void main(){
+				vec4 prevPx = texture2D(tPrevFrame, vUv);
+				vec4 currPx = texture2D(tCurrentFrame, vUv);
+
+				// if(currPx - prevPx == vec4(0,0,0,0)){
+					gl_FragColor = currPx - prevPx;
+				// }
+					// gl_FragColor = vec4(0,0,0,1.0);
+				// }
+			}
+		</script>
+	</head>
+	<body>
+
+		<!-- <video src="warp.mov" muted autoplay loop></video> -->
+		<video src="mov_bbb.mp4" muted autoplay loop></video>
+		
+		<script>
+
+			var video = document.querySelector('video');
+			var stopped = true;
+			video.addEventListener('playing', function onPlaying(){
+				console.log('playing')
+				renderer.setSize(video.videoWidth, video.videoHeight);
+				prevFrameCanvas.width = currentFrameCanvas.width = video.videoWidth;
+				prevFrameCanvas.height = currentFrameCanvas.height = video.videoHeight;
+
+				// camera.aspect = video.videoWidth / video.videoHeight;
+				// camera.updateProjectionMatrix();
+				if(stopped){
+					stopped = false;
+					update();	
+				} 
+			});
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setPixelRatio( window.devicePixelRatio );
+			// renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild(renderer.domElement);
+
+			var scene = new THREE.Scene();
+			var width = 1, height = 1;
+			// var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 50 );
+			var camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
+			camera.position.z = 1;
+
+
+			var currentFrameCanvas = document.createElement('canvas');
+			var currentFrameContext = currentFrameCanvas.getContext('2d');
+			var currentFrameTexture = new THREE.Texture( currentFrameCanvas );
+			currentFrameTexture.minFilter = currentFrameTexture.magFilter = THREE.LinearFilter;
+		
+
+			var prevFrameCanvas = document.createElement('canvas');
+			var prevFrameContext = prevFrameCanvas.getContext('2d');
+			var prevFrameTexture = new THREE.Texture( prevFrameCanvas );
+			prevFrameTexture.minFilter = prevFrameTexture.magFilter = THREE.LinearFilter;
+
+
+			var vShader = $('#vertexshader');
+			var fShader = $('#fragmentshader');
+			var shaderMaterial = new THREE.ShaderMaterial({
+				vertexShader: vShader.text(),
+				fragmentShader: fShader.text(),
+				uniforms: {
+					"tPrevFrame": { type: "t", value: prevFrameTexture },
+					"tCurrentFrame": { type: "t", value: currentFrameTexture },
+				}
+			});
+
+			var geometry = new THREE.PlaneGeometry( 1, 1, 1 );
+			// var geometry = new THREE.PlaneGeometry( .81, .81, .81 );
+			var plane = new THREE.Mesh( geometry, shaderMaterial );
+			scene.add(plane);
+			
+
+
+			function update(){
+				// console.log('update')
+				if(stopped) return;
+				requestAnimationFrame(update);
+
+				// update uniforms
+				prevFrameContext.drawImage(currentFrameCanvas, 0, 0);
+				currentFrameContext.drawImage(video, 0, 0);
+				currentFrameTexture.needsUpdate = true;
+				prevFrameTexture.needsUpdate = true;
+
+				renderer.render(scene, camera);
+			}
+
+		</script>
+	</body>
+</html>
