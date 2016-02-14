@@ -2,9 +2,17 @@
 	<head>
 		<style>
 			html, body {
-				margin: 0; padding: 40px;
+				margin: 0; padding: 0;
 				background: #222;
 			}
+			#container {
+				position: absolute;
+				left: 50%; top: 50%;
+				transform: translate(-50%, -50%);
+				width: 100%;
+				text-align: center;
+			}
+			video, canvas { display: inline-block; }
 		</style>
 		<script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
 		<script src="three.min.js"></script>
@@ -25,18 +33,14 @@
 				vec4 prevPx = texture2D(tPrevFrame, vUv);
 				vec4 currPx = texture2D(tCurrentFrame, vUv);
 
-				// if(currPx - prevPx == vec4(0,0,0,0)){
-					gl_FragColor = currPx - prevPx;
-				// }
-					// gl_FragColor = vec4(0,0,0,1.0);
-				// }
+				gl_FragColor = currPx - prevPx;
 			}
 		</script>
 	</head>
 	<body>
-
-		<!-- <video src="warp.mov" muted autoplay loop></video> -->
-		<video src="mov_bbb.mp4" muted autoplay loop></video>
+		<div id="container">
+			<video src="GOBO.v1-SD.mp4" muted autoplay loop></video>
+		</div>
 		
 		<script>
 
@@ -59,7 +63,7 @@
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setPixelRatio( window.devicePixelRatio );
 			// renderer.setSize( window.innerWidth, window.innerHeight );
-			document.body.appendChild(renderer.domElement);
+			document.querySelector('#container').appendChild(renderer.domElement);
 
 			var scene = new THREE.Scene();
 			var width = 1, height = 1;
